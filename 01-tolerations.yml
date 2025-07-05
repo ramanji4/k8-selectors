@@ -13,3 +13,7 @@ spec:
     operator: "Equal"
     value: "gpu"
     effect: "NoSchedule"
+
+
+# if we taint the node then the pods will not be scheduled into that tainted node
+# if we tolerate the same node by mentioning tainted "key value description", then the pods may schedule into the same node but not 100% guarantee.
