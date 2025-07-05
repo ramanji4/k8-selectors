@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-cache
+spec:
+  replicas: 3
+  selector:       #these are used to select the pod to create replicas
+    matchLabels:  #matchlabels should match with pod level labels 
+      app: store
+  template:       #this is the pod definition
+    metadata:
+      labels:     #these labels are belongs to pod
+        app: store
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - store
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: redis-server
+        image: redis:3.2-alpine
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-server
+spec:
+  replicas: 3
+  selector:       #these are used to select the pod to create replicas
+    matchLabels:  #matchlabels should match with pod level labels 
+      app: web-store
+  template:       #this is the pod definition
+    metadata:
+      labels:     #these labels are belongs to pod
+        app: web-store
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - web-store
+            topologyKey: "kubernetes.io/zone"
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - store
+            topologyKey: "kubernetes.io/zone"
+      containers:
+      - name: web-app
+        image: nginx:1.16-alpine
